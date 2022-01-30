@@ -1,6 +1,8 @@
+import re
+
 from bs4 import BeautifulSoup
 from selenium import webdriver
-import re
+
 with open('urls.txt') as file:
     urls = file.readlines()
 

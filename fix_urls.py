@@ -5,5 +5,8 @@ with open('links.txt', 'r+') as links:
         if 'https' not in lines[i]:
             lines[i] = lines[i].replace('http', 'https')
 
+        if 'www.' in lines[i]:
+            lines[i] = lines[i].replace('www.', '')
+
 with open('links.txt', 'w') as links:
     links.writelines(map(str, lines))
