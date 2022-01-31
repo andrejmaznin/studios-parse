@@ -2,17 +2,14 @@ import asyncio
 import re
 import ssl
 from asyncio import gather
-from typing import Optional, List
+from parser.consts import CONTACT_PATHS, EMAIL_TEMPLATE
+from typing import List, Optional
 
-from httpx import AsyncClient
-from bs4 import BeautifulSoup
 import httpx._exceptions as exc
+from bs4 import BeautifulSoup
+from httpx import AsyncClient
 
-CONTACT_PATHS = ['/contact', '/contacts']
-EMAIL_TEMPLATE = re.compile(
-    '''(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])''')  # noqa
-
-with open('links.txt') as file:
+with open('../data/links.txt') as file:
     links = [line.rstrip('\n') for line in file.readlines()]
 
 
@@ -32,11 +29,11 @@ async def get_html(
 async def find_email(
     url: str,
     client: AsyncClient
-) -> List[str]:
+) -> Optional[List[str]]:
     if source := await get_html(url, client=client):
         bs = BeautifulSoup(
             source,
-            features="html.parser"
+            features='html.parser'
         )
 
         emails = bs.find_all(
@@ -48,6 +45,8 @@ async def find_email(
 
         return [email.text for email in emails]
 
+    return None
+
 
 async def emails_by_url(
     base_url: str,
@@ -56,7 +55,10 @@ async def emails_by_url(
     emails = []
 
     for path in CONTACT_PATHS:
-        if emails_on_path := await find_email(url=base_url + path, client=client):
+        if emails_on_path := await find_email(
+            url=base_url + path,
+            client=client
+        ):
             emails += emails_on_path
 
     return [re.sub('\n\t', '', email) for email in emails]
@@ -74,5 +76,5 @@ async def main():
     return list(set(filter(EMAIL_TEMPLATE.match, results)))
 
 
-with open('emails.txt', 'w') as file:
+with open('../data/emails.txt', 'w') as file:
     file.writelines(i + '\n' for i in asyncio.run(main()))

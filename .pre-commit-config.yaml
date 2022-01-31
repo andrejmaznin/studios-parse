@@ -26,6 +26,7 @@ repos:
     hooks:
       - id: mypy
         args: [
-            "--sqlite-cache"
+            "--sqlite-cache",
+            "--ignore-missing-imports",
         ]
         additional_dependencies: [ pydantic>1.8.0, sqlmodel>0.0.4 ]

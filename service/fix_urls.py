@@ -1,4 +1,4 @@
-with open('links.txt', 'r+') as links:
+with open('../data/links.txt', 'r+') as links:
     lines = links.readlines()
 
     for i in range(len(lines)):
@@ -8,5 +8,5 @@ with open('links.txt', 'r+') as links:
         if 'www.' in lines[i]:
             lines[i] = lines[i].replace('www.', '')
 
-with open('links.txt', 'w') as links:
+with open('../data/links.txt', 'w') as links:
     links.writelines(map(str, lines))
